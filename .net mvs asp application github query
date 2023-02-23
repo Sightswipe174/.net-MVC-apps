@@ -1,0 +1,160 @@
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/Product_Layout.cshtml";
+}
+
+<h2>Index</h2>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        LoadProduct();
+    });
+    function LoadProduct() {
+        var settings = {
+            "url": "http://localhost:64517/api/Product/?c_id=",
+            "method": "GET",
+            "timeout": 0,
+        };
+        $.ajax(settings).done(function (response) {
+            var Product = "";
+            $.each(response,
+                function (index, value) {
+                    Product += '<tr>'
+                    + '<td> <a href="/ApiProduct/UpdateProduct/' + value.c_id + '" class="text text-primary"> Edit</a> </td>'
+                    + '<td>' + value.c_name + '</td>'
+                    + '<td>' + value.c_price + '</td>'
+                    + '<td>' + value.c_isactive + '</td>'
+                    + '<td> <a href="#" onclick="delProduct(' + value.c_id + ')" class="text text-danger"> Delete</a> </td>'
+                    + '</tr>';
+                });
+            $('#tableProduct').append(Product);
+            console.log(response);
+        });
+    }
+    function delProduct(id) {
+        if (confirm("Want to delete successfully") == true) {
+            var settings = {
+                "url": "http://localhost:64517/api/Product/" + id,
+                "method": "DELETE",
+                "timeout": 0,
+            };
+            $.ajax(settings).done(function (response) {
+                window.location = "/ApiProduct/Index";
+            });
+        }
+    }
+</script>
+
+<br /><br />
+<a href="/ApiProduct/UpdateProduct">New</a>
+<table style="width:100%" class="table-bordered table-condensed table-hover table-striped" id="tableProduct">
+    <thead>
+        <tr>
+            <th>Edit</th>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Is Active</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+</table>
+
+
+@{
+    ViewBag.Title = "UpdateProduct";
+    Layout = "~/Views/Shared/Product_Layout.cshtml";
+}
+
+<h2>UpdateProduct</h2>
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script>
+    $(document).ready(function(){
+        if(@ViewBag.id>0)
+            LoadProduct();
+    });
+    function LoadProduct(){
+        var settings = {
+            "url":"http://localhost:64517/api/Product/" +@ViewBag.id,
+            "method":"GET",
+            "timeout": 0,
+        };
+        $.ajax(settings).done(function(response){
+            $("#txtid").val(response.c_id),
+            $('#txtname').val(response.c_name),
+            $('#txtprice').val(response.c_price),
+            $('#txtisactive').val(response.c_isactive),
+
+            console.log(response);
+        });
+    }
+    function UpdateProduct(){
+        var Product ={
+            c_id:$('#txtid').val(),
+            c_name:$('#txtname').val(),
+            c_price:$('#txtprice').val(),
+            c_isactive:$('#txtisactive').is(":checked"),
+        }
+        console.log(Product);
+        var settings ="";
+        if(@ViewBag.id ===0){
+            console.log(Product);
+            settings = {
+                "url": "http://localhost:64517/api/Product/",
+                "method":"POST",
+                "timeout":0,
+                "headers":{
+                    "Content-Type":"application/json"
+                },
+                "data":JSON.stringify(Product),
+            };
+        }else{
+            settings = {
+                "url": "http://localhost:64517/api/Product/" + @ViewBag.id,
+                "method":"PUT",
+                "timeout":0,
+                "headers":{
+                    "Content-Type":"application/json"
+                },
+                "data":JSON.stringify(Product),
+            };
+        }
+        console.log(settings);
+        $.ajax(settings).done(function(response){
+            alert("Update Successfully");
+            window.location="/ApiProduct/Index";
+        });
+    }
+</script>
+<h2>Product</h2>
+<div class="form-horizontal">
+    <div class="form-group">
+        <div class="col-md-10">
+            <input type="hidden" name="txtid" id="txtid" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="txtname">Name </label>
+        <input type="text" name="txtname" id="txtname" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="txtemail">Price </label>
+        <input type="text" name="txtprice" id="txtprice" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label for="txtemail">Is Active? </label>
+        <input class="table-bordered table-condensed table-hover table-striped" type="checkbox" name="txtisactive" id="txtisactive" class="form-control" />
+    </div>
+
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="button" value="Create" onclick="UpdateProduct()" class="btn btn-primary" />
+        </div>
+    </div>
+</div>
